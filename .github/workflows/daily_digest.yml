@@ -2,11 +2,10 @@ name: Daily Job Digest
 
 on:
   schedule:
-    # All times UTC — US Eastern Daylight Time (ET = UTC-4)
     - cron: "0 10 * * *"   # 6:00 AM ET
     - cron: "0 16 * * *"   # 12:00 PM ET
     - cron: "0 22 * * *"   # 6:00 PM ET
-  workflow_dispatch:        # lets you trigger manually from GitHub anytime
+  workflow_dispatch:
 
 jobs:
   run-digest:
@@ -26,8 +25,7 @@ jobs:
 
       - name: Run digest
         env:
-          GOOGLE_API_KEY:     ${{ secrets.GOOGLE_API_KEY }}
-          GOOGLE_CX:          ${{ secrets.GOOGLE_CX }}
+          BRAVE_API_KEY:      ${{ secrets.BRAVE_API_KEY }}
           GMAIL_ADDRESS:      ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: python job_digest.py

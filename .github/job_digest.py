@@ -2,7 +2,7 @@
 """
 Daily Job Digest
 ----------------
-- Runs one query per ATS platform (10 queries per run)
+- Runs one query per ATS platform via Brave Search API (10 queries per run)
 - Detects salary and work location from snippets
 - Emails an HTML digest via Gmail
 - Saves a persistent all-time jobs table to all_jobs.html
@@ -26,12 +26,10 @@ from email.mime.text import MIMEText
 from urllib.parse import urlparse
 
 # ─────────────────────────────────────────────────────────────
-#  CONFIG — all values come from environment variables
-#  (set as GitHub Secrets, or in your terminal for local runs)
+#  CONFIG
 # ─────────────────────────────────────────────────────────────
 
-GOOGLE_API_KEY     = os.environ.get("GOOGLE_API_KEY", "")
-GOOGLE_CX          = os.environ.get("GOOGLE_CX", "")
+BRAVE_API_KEY      = os.environ.get("BRAVE_API_KEY", "")
 GMAIL_ADDRESS      = os.environ.get("GMAIL_ADDRESS", "")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 
@@ -39,7 +37,7 @@ SEEN_JOBS_FILE   = "seen_jobs.json"
 ALL_JOBS_FILE    = "all_jobs.json"
 DIGEST_HTML_FILE = "digest.html"
 ALL_JOBS_HTML    = "all_jobs.html"
-MAX_RESULTS      = 10
+MAX_RESULTS      = 20   # Brave allows up to 20 per request
 
 # ─────────────────────────────────────────────────────────────
 #  ATS PLATFORMS — one search query runs per entry
@@ -59,12 +57,12 @@ ATS_PLATFORMS = [
 ]
 
 # ─────────────────────────────────────────────────────────────
-#  SEARCH KEYWORDS — applied to every ATS above
+#  SEARCH KEYWORDS
 # ─────────────────────────────────────────────────────────────
 
 KEYWORDS = (
     '(insights OR competitive OR "market research" OR narrative OR "competitive intelligence") '
-    'intitle:(analyst OR strategist OR strategy OR manager OR director) '
+    '(analyst OR strategist OR strategy OR manager OR director) '
     'remote -intern -contract -hourly -warehouse'
 )
 
@@ -94,9 +92,9 @@ def detect_salary(text):
 #  LOCATION DETECTION
 # ─────────────────────────────────────────────────────────────
 
-HYBRID_PATTERNS  = [r"\bhybrid\b", r"\d\s*days?.{0,10}(office|week)", r"flexible.{0,20}schedule", r"in-office some"]
-ONSITE_PATTERNS  = [r"\bon.?site\b", r"\bin.office\b", r"in our .{0,30} office", r"\bheadquarters\b", r"\bonsite\b"]
-REMOTE_PATTERNS  = [r"\bremote\b", r"work from home", r"\bwfh\b", r"fully remote", r"100%\s*remote", r"distributed team"]
+HYBRID_PATTERNS = [r"\bhybrid\b", r"\d\s*days?.{0,10}(office|week)", r"flexible.{0,20}schedule"]
+ONSITE_PATTERNS = [r"\bon.?site\b", r"\bin.office\b", r"in our .{0,30} office", r"\bheadquarters\b", r"\bonsite\b"]
+REMOTE_PATTERNS = [r"\bremote\b", r"work from home", r"\bwfh\b", r"fully remote", r"100%\s*remote", r"distributed team"]
 
 def detect_location(text):
     t = text.lower()
@@ -114,8 +112,8 @@ def detect_location(text):
 
 def domain_label(url):
     try:
-        u     = urlparse(url)
-        host  = u.hostname or ""
+        u    = urlparse(url)
+        host = u.hostname or ""
         if "myworkdayjobs.com" in host:
             return host
         parts = [p for p in u.path.split("/") if p]
@@ -124,24 +122,35 @@ def domain_label(url):
         return url
 
 # ─────────────────────────────────────────────────────────────
-#  GOOGLE SEARCH
+#  BRAVE SEARCH
 # ─────────────────────────────────────────────────────────────
 
-def google_search(query):
+def brave_search(query):
     try:
         resp = requests.get(
-            "https://www.googleapis.com/customsearch/v1",
+            "https://api.search.brave.com/res/v1/web/search",
+            headers={
+                "Accept":               "application/json",
+                "Accept-Encoding":      "gzip",
+                "X-Subscription-Token": BRAVE_API_KEY,
+            },
             params={
-                "key":          GOOGLE_API_KEY,
-                "cx":           GOOGLE_CX,
-                "q":            query,
-                "num":          MAX_RESULTS,
-                "dateRestrict": "d1",
+                "q":        query,
+                "count":    MAX_RESULTS,
+                "freshness": "pd",   # pd = past day
             },
             timeout=15,
         )
         resp.raise_for_status()
-        return resp.json().get("items", [])
+        results = resp.json().get("web", {}).get("results", [])
+        return [
+            {
+                "link":    r.get("url", ""),
+                "title":   r.get("title", ""),
+                "snippet": r.get("description", ""),
+            }
+            for r in results
+        ]
     except requests.RequestException as e:
         print(f"  [ERROR] {e}")
         return []
@@ -185,7 +194,7 @@ def run_searches(seen, dry_run=False):
     for ats in ATS_PLATFORMS:
         query = f"{ats['site']} {KEYWORDS}"
         print(f"  Querying {ats['name']}...")
-        results = google_search(query)
+        results = brave_search(query)
         found   = 0
 
         for item in results:
@@ -277,8 +286,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 .stats a { color: #1a56db; text-decoration: none; }
 .stats a:hover { text-decoration: underline; }
 input[type=text] { width: 100%; padding: 8px 12px; border: 1px solid #ddd;
-                   border-radius: 8px; font-size: 14px; margin-bottom: 1rem;
-                   background: #fff; color: #111; }
+                   border-radius: 8px; font-size: 14px; margin-bottom: 1rem; background: #fff; color: #111; }
 .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
 .flabel { font-size: 12px; color: #666; margin-right: 2px; }
 .fbtn { font-size: 12px; padding: 4px 12px; border-radius: 99px;
@@ -383,7 +391,7 @@ def build_digest(new_jobs, dry_run=False):
     <h1>Job digest &mdash; new this run</h1>
     <div class="stats">
       <span>Generated <strong>{now}</strong></span>
-      <span id="ts"><strong>{total}</strong> new posting{"" if total == 1 else "s"}</span>
+      <span><strong>{total}</strong> new posting{"" if total == 1 else "s"}</span>
       <span><strong>{with_salary}</strong> with salary disclosed</span>
     </div>
   </div>
@@ -456,9 +464,7 @@ def build_all_jobs(all_jobs):
       <span><strong>{with_salary}</strong> with salary disclosed</span>
     </div>
   </div>
-
   <input type="text" placeholder="Search by title, company..." oninput="apply()">
-
   <div class="filters">
     <span class="flabel">Location:</span>
     <button class="fbtn on" onclick="setL('all',this)">All</button>
@@ -470,13 +476,12 @@ def build_all_jobs(all_jobs):
     <button class="fbtn on" onclick="setS('all',this)">All</button>
     <button class="fbtn" onclick="setS('yes',this)">Disclosed only</button>
   </div>
-
   <div class="twrap">
     <table>
       <thead><tr>
-        <th onclick="sort(0)">Found &#8597;</th>
-        <th onclick="sort(1)">Company &#8597;</th>
-        <th onclick="sort(2)">Title &#8597;</th>
+        <th onclick="srt(0)">Found &#8597;</th>
+        <th onclick="srt(1)">Company &#8597;</th>
+        <th onclick="srt(2)">Title &#8597;</th>
         <th>Location</th>
         <th>Salary</th>
       </tr></thead>
@@ -485,39 +490,29 @@ def build_all_jobs(all_jobs):
   </div>
 </div>
 <script>
-let lf = 'all', sf = 'all', sc = -1, sa = true;
-function setL(v, btn) {{
-  lf = v;
-  document.querySelectorAll('.fbtn').forEach(b => {{ if (b.onclick.toString().includes('setL')) b.classList.remove('on'); }});
-  btn.classList.add('on'); apply();
-}}
-function setS(v, btn) {{
-  sf = v;
-  document.querySelectorAll('.fbtn').forEach(b => {{ if (b.onclick.toString().includes('setS')) b.classList.remove('on'); }});
-  btn.classList.add('on'); apply();
-}}
-function apply() {{
-  const q = document.querySelector('input').value.toLowerCase();
-  let n = 0;
-  document.querySelectorAll('#tbody tr').forEach(r => {{
-    const ok = (lf === 'all' || r.dataset.loc === lf)
-            && (sf === 'all' || r.dataset.sal === sf)
-            && (!q || r.dataset.txt.includes(q));
-    r.style.display = ok ? '' : 'none';
-    if (ok) n++;
+let lf='all', sf='all', sc=-1, sa=true;
+function setL(v,btn){{lf=v;document.querySelectorAll('.fbtn').forEach(b=>{{if(b.onclick.toString().includes('setL'))b.classList.remove('on')}});btn.classList.add('on');apply();}}
+function setS(v,btn){{sf=v;document.querySelectorAll('.fbtn').forEach(b=>{{if(b.onclick.toString().includes('setS'))b.classList.remove('on')}});btn.classList.add('on');apply();}}
+function apply(){{
+  const q=document.querySelector('input').value.toLowerCase();
+  let n=0;
+  document.querySelectorAll('#tbody tr').forEach(r=>{{
+    const ok=(lf==='all'||r.dataset.loc===lf)&&(sf==='all'||r.dataset.sal===sf)&&(!q||r.dataset.txt.includes(q));
+    r.style.display=ok?'':'none';
+    if(ok)n++;
   }});
-  document.getElementById('showing').textContent = n;
+  document.getElementById('showing').textContent=n;
 }}
-function sort(col) {{
-  const tb = document.getElementById('tbody');
-  const rows = [...tb.querySelectorAll('tr')];
-  if (sc === col) sa = !sa; else {{ sc = col; sa = true; }}
-  rows.sort((a, b) => {{
-    const at = a.cells[col].innerText.trim().toLowerCase();
-    const bt = b.cells[col].innerText.trim().toLowerCase();
-    return sa ? at.localeCompare(bt) : bt.localeCompare(at);
+function srt(col){{
+  const tb=document.getElementById('tbody');
+  const rows=[...tb.querySelectorAll('tr')];
+  if(sc===col)sa=!sa;else{{sc=col;sa=true;}}
+  rows.sort((a,b)=>{{
+    const at=a.cells[col].innerText.trim().toLowerCase();
+    const bt=b.cells[col].innerText.trim().toLowerCase();
+    return sa?at.localeCompare(bt):bt.localeCompare(at);
   }});
-  rows.forEach(r => tb.appendChild(r));
+  rows.forEach(r=>tb.appendChild(r));
 }}
 </script>
 </body>
@@ -531,22 +526,19 @@ def send_email(digest_html, num_jobs):
     if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD:
         print("Email skipped — credentials not configured.")
         return
-
     now     = datetime.datetime.now().strftime("%b %d %Y, %I:%M %p ET")
     subject = f"Job Digest — {num_jobs} new posting{'s' if num_jobs != 1 else ''} — {now}"
-
-    msg = MIMEMultipart("alternative")
+    msg     = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"]    = GMAIL_ADDRESS
     msg["To"]      = GMAIL_ADDRESS
     msg.attach(MIMEText(digest_html, "html"))
-
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, GMAIL_ADDRESS, msg.as_string())
-        print("Email sent successfully.")
+        print("Email sent.")
     except Exception as e:
         print(f"Email failed: {e}")
 
@@ -567,26 +559,22 @@ def main():
     new_jobs, new_urls = run_searches(seen, dry_run=args.preview)
     print(f"New jobs this run: {len(new_jobs)}")
 
-    # Write digest
     digest_html = build_digest(new_jobs, dry_run=args.preview)
     with open(DIGEST_HTML_FILE, "w", encoding="utf-8") as f:
         f.write(digest_html)
     print(f"Digest written -> {DIGEST_HTML_FILE}")
 
-    # Update all-time records
     if not args.preview:
         all_jobs.extend(new_jobs)
         seen.update(new_urls)
         save_all_jobs(all_jobs)
         save_seen(seen)
 
-    # Write all-jobs table
     display_jobs = all_jobs if not args.preview else new_jobs
     with open(ALL_JOBS_HTML, "w", encoding="utf-8") as f:
         f.write(build_all_jobs(display_jobs))
     print(f"All-jobs table written -> {ALL_JOBS_HTML}")
 
-    # Send email
     send_email(digest_html, len(new_jobs))
     print("Done.")
 
