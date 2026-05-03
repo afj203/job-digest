@@ -152,9 +152,17 @@ def brave_search(query):
             for r in results
         ]
     except requests.RequestException as e:
-        print(f"  [ERROR] {e}")
-        return []
-
+   results = resp.json().get("web", {}).get("results", [])
+        print(f"    Raw results from Brave: {len(results)}")
+        print(f"    Full response keys: {list(resp.json().keys())}")
+        return [
+            {
+                "link":    r.get("url", ""),
+                "title":   r.get("title", ""),
+                "snippet": r.get("description", ""),
+            }
+            for r in results
+        ]
 # ─────────────────────────────────────────────────────────────
 #  PERSISTENCE
 # ─────────────────────────────────────────────────────────────
