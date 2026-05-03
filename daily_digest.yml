@@ -1,0 +1,44 @@
+name: Daily Job Digest
+
+on:
+  schedule:
+    - cron: "0 12 * * *"   # runs every day at 8 AM ET (12:00 UTC)
+                             # adjust: https://crontab.guru
+  workflow_dispatch:         # lets you trigger manually from GitHub anytime
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run digest
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CX:      ${{ secrets.GOOGLE_CX }}
+        run: python job_digest.py
+
+      - name: Upload digest as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-digest-${{ github.run_id }}
+          path: digest.html
+          retention-days: 7   # GitHub keeps it for 7 days, then deletes
+
+      - name: Commit updated seen_jobs.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add seen_jobs.json
+          git diff --staged --quiet || git commit -m "chore: update seen jobs [skip ci]"
+          git push

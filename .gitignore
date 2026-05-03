@@ -1,0 +1,10 @@
+# Never commit your API key
+.env
+
+# Digest output (generated on each run, don't need it in source control)
+digest.html
+
+# Python
+__pycache__/
+*.pyc
+.DS_Store
