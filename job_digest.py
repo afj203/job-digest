@@ -22,6 +22,8 @@ import requests
 # ─────────────────────────────────────────────────────────────
 #  CONFIG
 # ─────────────────────────────────────────────────────────────
+GMAIL_ADDRESS      = os.environ.get("GMAIL_ADDRESS", "")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 
 GOOGLE_API_KEY   = os.environ.get("GOOGLE_API_KEY", "YOUR_API_KEY_HERE")
 GOOGLE_CX        = os.environ.get("GOOGLE_CX", "YOUR_SEARCH_ENGINE_ID_HERE")
@@ -479,6 +481,27 @@ function sortTable(col){{
 </script>
 </body></html>"""
 
+def send_email(digest_html):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD:
+        print("Email skipped — credentials not set.")
+        return
+
+    now     = datetime.datetime.now().strftime("%b %d %Y, %I:%M %p")
+    msg     = MIMEMultipart("alternative")
+    msg["Subject"] = f"Job Digest — {now}"
+    msg["From"]    = GMAIL_ADDRESS
+    msg["To"]      = GMAIL_ADDRESS
+    msg.attach(MIMEText(digest_html, "html"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+        server.sendmail(GMAIL_ADDRESS, GMAIL_ADDRESS, msg.as_string())
+    print("Email sent.")
 # ─────────────────────────────────────────────────────────────
 #  MAIN
 # ─────────────────────────────────────────────────────────────
@@ -516,3 +539,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+	
+    send_email(open(DIGEST_HTML_FILE, encoding="utf-8").read())
+
