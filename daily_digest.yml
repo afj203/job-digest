@@ -2,9 +2,11 @@ name: Daily Job Digest
 
 on:
   schedule:
-    - cron: "0 12 * * *"   # runs every day at 8 AM ET (12:00 UTC)
-                             # adjust: https://crontab.guru
-  workflow_dispatch:         # lets you trigger manually from GitHub anytime
+    # All times UTC — adjusted for US Eastern Daylight Time (ET = UTC-4)
+    - cron: "0 10 * * *"   # 6:00 AM ET
+    - cron: "0 16 * * *"   # 12:00 PM ET
+    - cron: "0 22 * * *"   # 6:00 PM ET
+  workflow_dispatch:        # lets you trigger manually from GitHub anytime
 
 jobs:
   run-digest:
@@ -31,14 +33,14 @@ jobs:
       - name: Upload digest as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: job-digest-${{ github.run_id }}
+          name: digest-${{ github.run_id }}
           path: digest.html
-          retention-days: 7   # GitHub keeps it for 7 days, then deletes
+          retention-days: 7
 
-      - name: Commit updated seen_jobs.json
+      - name: Commit updated files back to repo
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add seen_jobs.json
-          git diff --staged --quiet || git commit -m "chore: update seen jobs [skip ci]"
+          git add seen_jobs.json all_jobs.json all_jobs.html
+          git diff --staged --quiet || git commit -m "chore: update job data [skip ci]"
           git push

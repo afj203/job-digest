@@ -2,14 +2,14 @@
 """
 Daily Job Digest
 ----------------
-Searches ATS platforms via Google Custom Search API,
-detects salary disclosure, and outputs an HTML digest.
+Runs one query per ATS platform, detects salary and location,
+outputs a digest of new jobs and a persistent all-time jobs table.
 
-QUICK START:
-  1. pip install requests
-  2. Fill in CONFIG below
-  3. python job_digest.py --preview   <- see output with fake data (no API needed)
-  4. python job_digest.py             <- real run
+PREVIEW (no API key needed):
+  python job_digest.py --preview
+
+LIVE RUN:
+  python job_digest.py
 """
 
 import json
@@ -20,51 +20,45 @@ import argparse
 import requests
 
 # ─────────────────────────────────────────────────────────────
-#  CONFIG — fill these in
+#  CONFIG
 # ─────────────────────────────────────────────────────────────
 
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "YOUR_API_KEY_HERE")
-GOOGLE_CX      = os.environ.get("GOOGLE_CX", "YOUR_SEARCH_ENGINE_ID_HERE")
+GOOGLE_API_KEY   = os.environ.get("GOOGLE_API_KEY", "YOUR_API_KEY_HERE")
+GOOGLE_CX        = os.environ.get("GOOGLE_CX", "YOUR_SEARCH_ENGINE_ID_HERE")
 
 SEEN_JOBS_FILE   = "seen_jobs.json"
+ALL_JOBS_FILE    = "all_jobs.json"
 DIGEST_HTML_FILE = "digest.html"
+ALL_JOBS_HTML    = "all_jobs.html"
+
+MAX_RESULTS      = 10  # Google CSE max per request
 
 # ─────────────────────────────────────────────────────────────
-#  SEARCH QUERIES — customize these
+#  ATS PLATFORMS — one query will run per entry
 # ─────────────────────────────────────────────────────────────
 
-ATS_SITES = (
-    "site:boards.greenhouse.io OR "
-    "site:jobs.lever.co OR "
-    "site:jobs.ashbyhq.com OR "
-    "site:myworkdayjobs.com OR "
-    "site:jobs.smartrecruiters.com"
-)
-
-SEARCHES = [
-    {
-        "label": "Strategy & Insights — Remote",
-        "query": (
-            f"({ATS_SITES}) "
-            "(insights OR competitive OR \"market research\" OR narrative OR \"competitive intelligence\") "
-            "intitle:(analyst OR strategist OR strategy OR manager OR director) "
-            "remote -intern -contract -hourly -warehouse"
-        ),
-    },
-    # Add more searches here:
-    # {
-    #     "label": "Product Marketing — Remote",
-    #     "query": (
-    #         f"({ATS_SITES}) "
-    #         "\"product marketing\" "
-    #         "intitle:(manager OR director OR lead) "
-    #         "remote -intern -contract"
-    #     ),
-    # },
+ATS_PLATFORMS = [
+    {"name": "Greenhouse",      "site": "site:boards.greenhouse.io"},
+    {"name": "Lever",           "site": "site:jobs.lever.co"},
+    {"name": "Ashby",           "site": "site:jobs.ashbyhq.com"},
+    {"name": "Workday",         "site": "site:myworkdayjobs.com"},
+    {"name": "SmartRecruiters", "site": "site:jobs.smartrecruiters.com"},
+    {"name": "iCIMS",           "site": "site:icims.com"},
+    {"name": "BambooHR",        "site": "site:bamboohr.com"},
+    {"name": "Workable",        "site": "site:apply.workable.com"},
+    {"name": "Taleo",           "site": "site:taleo.net"},
+    {"name": "Jobvite",         "site": "site:jobs.jobvite.com"},
 ]
 
-MAX_RESULTS = 10
+# ─────────────────────────────────────────────────────────────
+#  SEARCH KEYWORDS — applied to every ATS above
+# ─────────────────────────────────────────────────────────────
 
+KEYWORDS = (
+    '(insights OR competitive OR "market research" OR narrative OR "competitive intelligence") '
+    'intitle:(analyst OR strategist OR strategy OR manager OR director) '
+    'remote -intern -contract -hourly -warehouse'
+)
 
 # ─────────────────────────────────────────────────────────────
 #  SALARY DETECTION
@@ -88,13 +82,45 @@ def detect_salary(text):
             return text[start:end].strip()
     return None
 
+# ─────────────────────────────────────────────────────────────
+#  LOCATION DETECTION
+# ─────────────────────────────────────────────────────────────
+
+REMOTE_PATTERNS  = [r"\bremote\b", r"work from home", r"\bwfh\b", r"fully remote", r"100%\s*remote", r"distributed team"]
+HYBRID_PATTERNS  = [r"\bhybrid\b", r"\d\s*days?.{0,10}office", r"flexible.{0,20}schedule", r"in-office some"]
+ONSITE_PATTERNS  = [r"\bon.?site\b", r"\bin.office\b", r"in our .{0,30} office", r"\bheadquarters\b", r"\bonsite\b"]
+
+def detect_location(text):
+    t = text.lower()
+    for p in HYBRID_PATTERNS:
+        if re.search(p, t): return "Hybrid", "loc-hybrid"
+    for p in ONSITE_PATTERNS:
+        if re.search(p, t): return "On-site", "loc-onsite"
+    for p in REMOTE_PATTERNS:
+        if re.search(p, t): return "Remote", "loc-remote"
+    return "Unknown", "loc-unknown"
+
+# ─────────────────────────────────────────────────────────────
+#  DOMAIN LABEL
+# ─────────────────────────────────────────────────────────────
+
+def domain_label(url):
+    try:
+        from urllib.parse import urlparse
+        u = urlparse(url)
+        host = u.hostname or ""
+        if "myworkdayjobs.com" in host:
+            return host
+        first = [p for p in u.path.split("/") if p]
+        return f"{host}/{first[0]}" if first else host
+    except:
+        return url
 
 # ─────────────────────────────────────────────────────────────
 #  GOOGLE SEARCH
 # ─────────────────────────────────────────────────────────────
 
 def google_search(query):
-    url = "https://www.googleapis.com/customsearch/v1"
     params = {
         "key":          GOOGLE_API_KEY,
         "cx":           GOOGLE_CX,
@@ -103,16 +129,18 @@ def google_search(query):
         "dateRestrict": "d1",
     }
     try:
-        resp = requests.get(url, params=params, timeout=15)
+        resp = requests.get(
+            "https://www.googleapis.com/customsearch/v1",
+            params=params, timeout=15
+        )
         resp.raise_for_status()
         return resp.json().get("items", [])
     except requests.RequestException as e:
         print(f"  [ERROR] {e}")
         return []
 
-
 # ─────────────────────────────────────────────────────────────
-#  SEEN JOBS PERSISTENCE
+#  PERSISTENCE
 # ─────────────────────────────────────────────────────────────
 
 def load_seen():
@@ -125,24 +153,19 @@ def save_seen(seen):
     with open(SEEN_JOBS_FILE, "w") as f:
         json.dump(list(seen), f, indent=2)
 
+def load_all_jobs():
+    if os.path.exists(ALL_JOBS_FILE):
+        with open(ALL_JOBS_FILE) as f:
+            return json.load(f)
+    return []
+
+def save_all_jobs(jobs):
+    with open(ALL_JOBS_FILE, "w") as f:
+        json.dump(jobs, f, indent=2)
 
 # ─────────────────────────────────────────────────────────────
 #  SEARCH RUNNER
 # ─────────────────────────────────────────────────────────────
-
-ATS_DOMAINS = {
-    "Greenhouse":      "greenhouse.io",
-    "Lever":           "lever.co",
-    "Ashby":           "ashbyhq.com",
-    "Workday":         "myworkdayjobs.com",
-    "SmartRecruiters": "smartrecruiters.com",
-}
-
-def guess_ats(url):
-    for name, domain in ATS_DOMAINS.items():
-        if domain in url:
-            return name
-    return "Unknown"
 
 def run_searches(seen, dry_run=False):
     if dry_run:
@@ -150,10 +173,12 @@ def run_searches(seen, dry_run=False):
 
     new_jobs = []
     new_urls = set()
+    now      = datetime.datetime.now().isoformat()
 
-    for search in SEARCHES:
-        print(f"\n Searching: {search['label']}")
-        results = google_search(search["query"])
+    for ats in ATS_PLATFORMS:
+        query = f"{ats['site']} {KEYWORDS}"
+        print(f"  Searching {ats['name']}...")
+        results = google_search(query)
 
         for item in results:
             url     = item.get("link", "")
@@ -163,208 +188,296 @@ def run_searches(seen, dry_run=False):
             if url in seen or url in new_urls:
                 continue
 
+            loc, loc_cls = detect_location(snippet + " " + title)
+
             new_jobs.append({
-                "search_label": search["label"],
-                "ats":          guess_ats(url),
-                "title":        title,
-                "url":          url,
-                "snippet":      snippet,
-                "salary":       detect_salary(snippet),
+                "found_at":    now,
+                "ats":         ats["name"],
+                "domain":      domain_label(url),
+                "title":       title,
+                "url":         url,
+                "snippet":     snippet,
+                "salary":      detect_salary(snippet),
+                "loc":         loc,
+                "loc_cls":     loc_cls,
             })
             new_urls.add(url)
+
+        print(f"    {sum(1 for j in new_jobs if j['ats'] == ats['name'])} new")
 
     return new_jobs, new_urls
 
 
 def _fake_results():
-    """Sample data for --preview mode. Edit to test formatting."""
+    now = datetime.datetime.now().isoformat()
     return [
-        {
-            "search_label": "Strategy & Insights — Remote",
-            "ats":   "Greenhouse",
-            "title": "Senior Competitive Intelligence Analyst",
-            "url":   "https://boards.greenhouse.io/example/jobs/1234",
-            "snippet": "Help shape our go-to-market strategy through deep competitive research. $95,000 - $120,000 per year. Remote.",
-            "salary": "$95,000 - $120,000 per year",
-        },
-        {
-            "search_label": "Strategy & Insights — Remote",
-            "ats":   "Lever",
-            "title": "Market Research Manager",
-            "url":   "https://jobs.lever.co/example/abc-123",
-            "snippet": "Lead qualitative and quantitative research programs to generate consumer insights. Fully remote role.",
-            "salary": None,
-        },
-        {
-            "search_label": "Strategy & Insights — Remote",
-            "ats":   "Ashby",
-            "title": "Director of Strategy",
-            "url":   "https://jobs.ashbyhq.com/example/xyz-789",
-            "snippet": "Own narrative strategy across product and marketing. Compensation: $140,000-$180,000 USD + equity.",
-            "salary": "$140,000-$180,000 USD",
-        },
-        {
-            "search_label": "Strategy & Insights — Remote",
-            "ats":   "Workday",
-            "title": "Business Insights Analyst",
-            "url":   "https://company.myworkdayjobs.com/careers/job/Remote/Business-Insights-Analyst",
-            "snippet": "Analyze market trends to drive strategic decisions across the business. 3+ years experience required.",
-            "salary": None,
-        },
+        {"found_at": now, "ats": "Greenhouse", "domain": "boards.greenhouse.io/luminary",
+         "title": "Senior Competitive Intelligence Analyst", "url": "https://boards.greenhouse.io/luminary/jobs/5923401",
+         "snippet": "Shape go-to-market strategy through deep competitive research. $95,000 - $120,000 per year. Fully remote.",
+         "salary": "$95,000 - $120,000 / yr", "loc": "Remote", "loc_cls": "loc-remote"},
+        {"found_at": now, "ats": "Lever", "domain": "jobs.lever.co/meridian-health",
+         "title": "Market Research Manager", "url": "https://jobs.lever.co/meridian-health/a3f2c891",
+         "snippet": "Lead qual and quant research programs. Hybrid schedule, 2 days/week in San Francisco office.",
+         "salary": None, "loc": "Hybrid", "loc_cls": "loc-hybrid"},
+        {"found_at": now, "ats": "Ashby", "domain": "jobs.ashbyhq.com/stackwise",
+         "title": "Director of Strategy", "url": "https://jobs.ashbyhq.com/stackwise/b7d4e120",
+         "snippet": "Own narrative strategy across product and marketing. Fully remote. Compensation: $140,000-$180,000 + equity.",
+         "salary": "$140,000 - $180,000", "loc": "Remote", "loc_cls": "loc-remote"},
+        {"found_at": now, "ats": "Workday", "domain": "forgeanalytics.myworkdayjobs.com",
+         "title": "Business Insights Analyst", "url": "https://forgeanalytics.myworkdayjobs.com/careers/job/JR-00291",
+         "snippet": "Analyze market trends to drive strategic decisions. On-site role based at our Austin, TX headquarters.",
+         "salary": None, "loc": "On-site", "loc_cls": "loc-onsite"},
+        {"found_at": now, "ats": "SmartRecruiters", "domain": "jobs.smartrecruiters.com/novabridge",
+         "title": "Competitive Strategy Manager", "url": "https://jobs.smartrecruiters.com/novabridge/743999001234567",
+         "snippet": "Build competitive battle cards and win/loss analysis. Remote-first. Pay range: $110,000 - $135,000 annually.",
+         "salary": "$110,000 - $135,000", "loc": "Remote", "loc_cls": "loc-remote"},
+        {"found_at": now, "ats": "iCIMS", "domain": "careers-crestline.icims.com/jobs",
+         "title": "Narrative Strategist, Brand", "url": "https://careers-crestline.icims.com/jobs/1042",
+         "snippet": "Develop and steward the brand voice and messaging architecture. Flexible hybrid model.",
+         "salary": None, "loc": "Hybrid", "loc_cls": "loc-hybrid"},
+        {"found_at": now, "ats": "BambooHR", "domain": "openloop.bamboohr.com/careers",
+         "title": "Consumer Insights Analyst", "url": "https://openloop.bamboohr.com/careers/88",
+         "snippet": "Surface the why behind consumer behavior. 100% remote. $75,000 - $90,000 + bonus.",
+         "salary": "$75,000 - $90,000", "loc": "Remote", "loc_cls": "loc-remote"},
+        {"found_at": now, "ats": "Workable", "domain": "apply.workable.com/pinnacleops",
+         "title": "GTM Strategy & Operations Lead", "url": "https://apply.workable.com/pinnacleops/j/C2E9A774/",
+         "snippet": "Drive go-to-market planning and cross-functional alignment across sales, marketing, and product.",
+         "salary": None, "loc": "Unknown", "loc_cls": "loc-unknown"},
     ]
 
-
 # ─────────────────────────────────────────────────────────────
-#  HTML OUTPUT — tweak CSS/layout here freely
+#  HTML: DIGEST (new jobs this run)
 # ─────────────────────────────────────────────────────────────
 
-ATS_COLORS = {
-    "Greenhouse":      "#24a148",
-    "Lever":           "#4361ee",
-    "Ashby":           "#7c3aed",
-    "Workday":         "#e07b00",
-    "SmartRecruiters": "#e63946",
-    "Unknown":         "#888",
-}
+def loc_tag(loc, cls):
+    return f'<span class="badge {cls}">{loc}</span>'
 
-def ats_badge(ats):
-    color = ATS_COLORS.get(ats, "#888")
-    return f'<span class="badge" style="background:{color}">{ats}</span>'
+def sal_tag(s):
+    return (f'<span class="badge sal-yes">&#10003; {s}</span>'
+            if s else '<span class="badge sal-no">No salary listed</span>')
 
-def salary_tag(salary):
-    if salary:
-        return f'<span class="salary-tag">&#128176; {salary}</span>'
-    return '<span class="no-salary">Salary not disclosed</span>'
+SHARED_CSS = """
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif);color:var(--color-text-primary,#111);background:var(--color-background-tertiary,#f5f5f5);padding:1.5rem 1rem}
+.wrap{max-width:820px;margin:0 auto}
+.hdr{padding-bottom:1rem;border-bottom:1px solid var(--color-border-tertiary,#e5e5e5);margin-bottom:1.25rem}
+.hdr h1{font-size:18px;font-weight:500;margin-bottom:.35rem}
+.stats{display:flex;gap:1.25rem;flex-wrap:wrap;font-size:13px;color:var(--color-text-secondary,#666)}
+.stats strong{color:var(--color-text-primary,#111);font-weight:500}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.filter-label{font-size:12px;color:var(--color-text-secondary,#666);margin-right:2px}
+.filter-btn{font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid #ccc;background:#fff;color:#555;cursor:pointer}
+.filter-btn.active{background:#f0f0f0;color:#111;border-color:#999}
+.section-lbl{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-secondary,#888);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.pill-count{background:#e5e5e5;color:#555;font-size:11px;padding:2px 8px;border-radius:99px}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1rem 1.125rem;margin-bottom:.75rem}
+.card:hover{border-color:#bbb}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:99px}
+.domain-badge{font-size:11px;padding:3px 9px;border-radius:99px;background:#f0f0f0;color:#555;font-family:monospace;border:1px solid #e0e0e0}
+.loc-remote{background:#d1fae5;color:#065f46}
+.loc-hybrid{background:#fef3c7;color:#78350f}
+.loc-onsite{background:#fee2e2;color:#7f1d1d}
+.loc-unknown{background:#f0f0f0;color:#888}
+.sal-yes{background:#d1fae5;color:#065f46}
+.sal-no{background:#f0f0f0;color:#aaa}
+.job-title{font-size:15px;font-weight:500;color:#1a56db;text-decoration:none;display:block;margin-bottom:.35rem;line-height:1.4}
+.job-title:hover{text-decoration:underline}
+.snippet{font-size:13px;color:#666;line-height:1.6;margin-bottom:.6rem}
+.view-link{font-size:12px;color:#1a56db;text-decoration:none}
+.view-link:hover{text-decoration:underline}
+.section{margin-bottom:2rem}
+.empty{font-size:14px;color:#888;font-style:italic;padding:1rem 0}
+.search-box{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:1rem}
+"""
 
-def build_html(jobs, dry_run=False):
+def build_digest_html(new_jobs, dry_run=False):
     now         = datetime.datetime.now().strftime("%A, %B %d %Y &ndash; %I:%M %p")
-    total       = len(jobs)
-    with_salary = sum(1 for j in jobs if j["salary"])
+    total       = len(new_jobs)
+    with_salary = sum(1 for j in new_jobs if j["salary"])
 
-    by_label = {}
-    for job in jobs:
-        by_label.setdefault(job["search_label"], []).append(job)
+    preview_banner = '<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:.75rem 1rem;font-size:.875rem;margin-bottom:1rem">Preview mode &mdash; using sample data.</div>' if dry_run else ""
 
-    sections_html = ""
-    for label, label_jobs in by_label.items():
-        cards = ""
-        for job in label_jobs:
-            snippet_text = job["snippet"][:220] + ("..." if len(job["snippet"]) > 220 else "")
-            cards += f"""
-            <div class="card">
-              <div class="card-meta">
-                {ats_badge(job["ats"])}
-                {salary_tag(job["salary"])}
-              </div>
-              <a class="job-title" href="{job["url"]}" target="_blank">{job["title"]}</a>
-              <p class="snippet">{snippet_text}</p>
-              <a class="apply-link" href="{job["url"]}" target="_blank">View posting &rarr;</a>
-            </div>"""
-        sections_html += f"""
-        <section>
-          <h2>{label} <span class="count">{len(label_jobs)}</span></h2>
+    by_ats = {}
+    for j in new_jobs:
+        by_ats.setdefault(j["ats"], []).append(j)
+
+    sections = ""
+    for ats_name, jobs in by_ats.items():
+        cards = "".join(f"""
+        <div class="card" data-loc="{j['loc']}" data-sal="{'yes' if j['salary'] else 'no'}">
+          <div class="meta">
+            <span class="domain-badge">{j['domain']}</span>
+            {loc_tag(j['loc'], j['loc_cls'])}
+            {sal_tag(j['salary'])}
+          </div>
+          <a class="job-title" href="{j['url']}" target="_blank">{j['title']}</a>
+          <p class="snippet">{j['snippet'][:240]}{'...' if len(j['snippet'])>240 else ''}</p>
+          <a class="view-link" href="{j['url']}" target="_blank">View posting &rarr;</a>
+        </div>""" for j in jobs)
+        sections += f"""
+        <div class="section" data-section>
+          <div class="section-lbl">{ats_name}<span class="pill-count">{len(jobs)}</span></div>
           {cards}
-        </section>"""
+        </div>"""
 
-    preview_banner = """
-        <div class="preview-banner">
-          Preview mode &mdash; using sample data. Run without --preview for live results.
-        </div>""" if dry_run else ""
-
-    no_jobs = '<p class="empty">No new postings found since last run.</p>' if not jobs else ""
+    no_jobs = '<p class="empty">No new postings found since last run.</p>' if not new_jobs else ""
 
     return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Digest</title>
-  <style>
-    :root {{
-      --bg:          #f8f9fa;
-      --surface:     #ffffff;
-      --border:      #e5e7eb;
-      --text:        #111827;
-      --muted:       #6b7280;
-      --accent:      #2563eb;
-      --salary-bg:   #ecfdf5;
-      --salary-text: #065f46;
-      --no-sal:      #9ca3af;
-    }}
-    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg); color: var(--text);
-      padding: 2rem 1rem;
-    }}
-    .preview-banner {{
-      max-width: 780px; margin: 0 auto 1.25rem;
-      background: #fef9c3; border: 1px solid #fde047;
-      border-radius: 8px; padding: .75rem 1rem; font-size: .875rem;
-    }}
-    header {{
-      max-width: 780px; margin: 0 auto 2rem;
-      padding-bottom: 1.25rem; border-bottom: 2px solid var(--border);
-    }}
-    header h1 {{ font-size: 1.5rem; font-weight: 700; }}
-    .meta {{
-      margin-top: .4rem; font-size: .85rem; color: var(--muted);
-      display: flex; gap: 1.5rem; flex-wrap: wrap;
-    }}
-    .meta strong {{ color: var(--text); }}
-    section {{ max-width: 780px; margin: 0 auto 2.5rem; }}
-    section h2 {{
-      font-size: .8rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--muted); margin-bottom: 1rem;
-      display: flex; align-items: center; gap: .5rem;
-    }}
-    .count {{
-      background: var(--border); color: var(--text);
-      font-size: .72rem; padding: .1rem .45rem; border-radius: 99px;
-    }}
-    .card {{
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: .85rem;
-      transition: box-shadow .15s;
-    }}
-    .card:hover {{ box-shadow: 0 4px 14px rgba(0,0,0,.07); }}
-    .card-meta {{ display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; flex-wrap: wrap; }}
-    .badge {{
-      color: #fff; font-size: .68rem; font-weight: 700;
-      padding: .18rem .5rem; border-radius: 99px; letter-spacing: .03em;
-    }}
-    .salary-tag {{
-      font-size: .78rem; font-weight: 600;
-      background: var(--salary-bg); color: var(--salary-text);
-      padding: .18rem .55rem; border-radius: 99px;
-    }}
-    .no-salary {{ font-size: .78rem; color: var(--no-sal); }}
-    .job-title {{
-      display: block; font-size: 1rem; font-weight: 600;
-      color: var(--accent); text-decoration: none; margin-bottom: .4rem; line-height: 1.4;
-    }}
-    .job-title:hover {{ text-decoration: underline; }}
-    .snippet {{ font-size: .875rem; color: var(--muted); line-height: 1.55; margin-bottom: .65rem; }}
-    .apply-link {{ font-size: .8rem; font-weight: 500; color: var(--accent); text-decoration: none; }}
-    .apply-link:hover {{ text-decoration: underline; }}
-    .empty {{ color: var(--muted); font-style: italic; max-width: 780px; margin: 0 auto; }}
-  </style>
-</head>
-<body>
-  {preview_banner}
-  <header>
-    <h1>Job Digest</h1>
-    <div class="meta">
-      <span>Generated <strong>{now}</strong></span>
-      <span><strong>{total}</strong> new posting{"" if total == 1 else "s"}</span>
-      <span><strong>{with_salary}</strong> with salary disclosed</span>
-    </div>
-  </header>
-  {sections_html}
-  {no_jobs}
-</body>
-</html>"""
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Digest</title><style>{SHARED_CSS}</style></head>
+<body><div class="wrap">
+{preview_banner}
+<div class="hdr">
+  <h1>Job digest &mdash; new this run</h1>
+  <div class="stats">
+    <span>Generated <strong>{now}</strong></span>
+    <span id="ts"><strong>{total}</strong> new posting{"" if total==1 else "s"}</span>
+    <span><strong>{with_salary}</strong> with salary disclosed</span>
+    <span><a href="all_jobs.html" style="color:#1a56db">View all-time table &rarr;</a></span>
+  </div>
+</div>
+<div class="filters">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" onclick="filt('all',this)">All</button>
+  <button class="filter-btn" onclick="filt('remote',this)">Remote only</button>
+  <button class="filter-btn" onclick="filt('hybrid',this)">Hybrid</button>
+  <button class="filter-btn" onclick="filt('salary',this)">Salary disclosed</button>
+</div>
+{sections}{no_jobs}
+</div>
+<script>
+function filt(type,btn){{
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card').forEach(c=>{{
+    const show = type==='all'
+      || (type==='remote' && c.dataset.loc==='Remote')
+      || (type==='hybrid' && c.dataset.loc==='Hybrid')
+      || (type==='salary' && c.dataset.sal==='yes');
+    c.style.display = show ? '' : 'none';
+  }});
+  document.querySelectorAll('[data-section]').forEach(s=>{{
+    const any = [...s.querySelectorAll('.card')].some(c=>c.style.display!=='none');
+    s.style.display = any ? '' : 'none';
+  }});
+}}
+</script>
+</body></html>"""
 
+# ─────────────────────────────────────────────────────────────
+#  HTML: ALL-TIME TABLE
+# ─────────────────────────────────────────────────────────────
+
+def build_all_jobs_html(all_jobs):
+    rows = ""
+    for j in reversed(all_jobs):
+        dt = j.get("found_at","")[:16].replace("T"," ")
+        sal_cell = f'<span class="badge sal-yes">{j["salary"]}</span>' if j["salary"] else '<span style="color:#aaa;font-size:12px">—</span>'
+        rows += f"""<tr
+          data-loc="{j['loc']}"
+          data-sal="{'yes' if j['salary'] else 'no'}"
+          data-text="{(j['title']+' '+j['domain']+' '+j['ats']).lower()}">
+          <td style="white-space:nowrap;color:#888;font-size:12px">{dt}</td>
+          <td><span class="domain-badge">{j['domain']}</span></td>
+          <td><a class="job-title" href="{j['url']}" target="_blank">{j['title']}</a></td>
+          <td>{loc_tag(j['loc'], j['loc_cls'])}</td>
+          <td>{sal_cell}</td>
+        </tr>"""
+
+    total = len(all_jobs)
+    sal_count = sum(1 for j in all_jobs if j["salary"])
+
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>All Jobs</title>
+<style>
+{SHARED_CSS}
+table{{width:100%;border-collapse:collapse;font-size:13px}}
+th{{text-align:left;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:#888;padding:6px 10px;border-bottom:1px solid #e5e5e5;white-space:nowrap;cursor:pointer}}
+th:hover{{color:#333}}
+td{{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}}
+tr:hover td{{background:#fafafa}}
+.table-wrap{{background:#fff;border:1px solid #e5e5e5;border-radius:12px;overflow:hidden}}
+</style></head>
+<body><div class="wrap">
+<div class="hdr">
+  <h1>All jobs found</h1>
+  <div class="stats">
+    <span><strong id="showing">{total}</strong> of <strong>{total}</strong> total</span>
+    <span><strong>{sal_count}</strong> with salary disclosed</span>
+    <span><a href="digest.html" style="color:#1a56db">&larr; Latest digest</a></span>
+  </div>
+</div>
+
+<input class="search-box" type="text" placeholder="Search by title, company, or ATS..." oninput="applyFilters()">
+
+<div class="filters">
+  <span class="filter-label">Location:</span>
+  <button class="filter-btn active" onclick="setLoc('all',this)">All</button>
+  <button class="filter-btn" onclick="setLoc('Remote',this)">Remote</button>
+  <button class="filter-btn" onclick="setLoc('Hybrid',this)">Hybrid</button>
+  <button class="filter-btn" onclick="setLoc('On-site',this)">On-site</button>
+  &nbsp;
+  <span class="filter-label">Salary:</span>
+  <button class="filter-btn active" onclick="setSal('all',this)">All</button>
+  <button class="filter-btn" onclick="setSal('yes',this)">Disclosed only</button>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr>
+    <th onclick="sortTable(0)">Found &#8597;</th>
+    <th onclick="sortTable(1)">Company &#8597;</th>
+    <th onclick="sortTable(2)">Title &#8597;</th>
+    <th>Location</th>
+    <th>Salary</th>
+  </tr></thead>
+  <tbody id="tbody">{rows}</tbody>
+</table>
+</div>
+</div>
+<script>
+let locFilter='all', salFilter='all', sortCol=-1, sortAsc=true;
+
+function setLoc(v,btn){{
+  locFilter=v;
+  document.querySelectorAll('.filters .filter-btn').forEach(b=>{{ if(b.onclick.toString().includes('setLoc')) b.classList.remove('active'); }});
+  btn.classList.add('active');
+  applyFilters();
+}}
+function setSal(v,btn){{
+  salFilter=v;
+  document.querySelectorAll('.filters .filter-btn').forEach(b=>{{ if(b.onclick.toString().includes('setSal')) b.classList.remove('active'); }});
+  btn.classList.add('active');
+  applyFilters();
+}}
+function applyFilters(){{
+  const q = document.querySelector('.search-box').value.toLowerCase();
+  let visible=0;
+  document.querySelectorAll('#tbody tr').forEach(r=>{{
+    const locOk = locFilter==='all' || r.dataset.loc===locFilter;
+    const salOk = salFilter==='all' || r.dataset.sal===salFilter;
+    const txtOk = !q || r.dataset.text.includes(q);
+    const show  = locOk && salOk && txtOk;
+    r.style.display = show ? '' : 'none';
+    if(show) visible++;
+  }});
+  document.getElementById('showing').textContent = visible;
+}}
+function sortTable(col){{
+  const tbody = document.getElementById('tbody');
+  const rows  = [...tbody.querySelectorAll('tr')];
+  if(sortCol===col) sortAsc=!sortAsc; else {{ sortCol=col; sortAsc=true; }}
+  rows.sort((a,b)=>{{
+    const at=a.cells[col].innerText.trim().toLowerCase();
+    const bt=b.cells[col].innerText.trim().toLowerCase();
+    return sortAsc ? at.localeCompare(bt) : bt.localeCompare(at);
+  }});
+  rows.forEach(r=>tbody.appendChild(r));
+}}
+</script>
+</body></html>"""
 
 # ─────────────────────────────────────────────────────────────
 #  MAIN
@@ -373,24 +486,33 @@ def build_html(jobs, dry_run=False):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--preview", action="store_true",
-                        help="Use fake data to preview output without calling the API")
+                        help="Use fake data — no API key needed")
     args = parser.parse_args()
 
-    seen = load_seen()
-    print(f"Seen jobs loaded: {len(seen)}")
+    seen     = load_seen()
+    all_jobs = load_all_jobs()
+    print(f"Seen jobs loaded: {len(seen)} | All-time records: {len(all_jobs)}")
 
     new_jobs, new_urls = run_searches(seen, dry_run=args.preview)
-    print(f"New jobs found: {len(new_jobs)}")
+    print(f"New jobs this run: {len(new_jobs)}")
 
-    html = build_html(new_jobs, dry_run=args.preview)
-    with open(DIGEST_HTML_FILE, "w") as f:
-        f.write(html)
+    # Build and save digest
+    with open(DIGEST_HTML_FILE, "w", encoding="utf-8") as f:
+        f.write(build_digest_html(new_jobs, dry_run=args.preview))
     print(f"Digest written -> {DIGEST_HTML_FILE}")
 
+    # Append to all-time list and rebuild table
     if not args.preview:
+        all_jobs.extend(new_jobs)
+        save_all_jobs(all_jobs)
         seen.update(new_urls)
         save_seen(seen)
-        print(f"Seen jobs updated: {len(seen)} total")
+
+    with open(ALL_JOBS_HTML, "w", encoding="utf-8") as f:
+        f.write(build_all_jobs_html(all_jobs if not args.preview else new_jobs))
+    print(f"All-jobs table written -> {ALL_JOBS_HTML}")
+
+    print("Done.")
 
 if __name__ == "__main__":
     main()
