@@ -135,16 +135,14 @@ def brave_search(query):
                 "X-Subscription-Token": BRAVE_API_KEY,
             },
             params={
-                "q":        query,
-                "count":    MAX_RESULTS,
-                "freshness": "pd",   # pd = past day
+                "q":     query,
+                "count": MAX_RESULTS,
             },
             timeout=15,
         )
         resp.raise_for_status()
         data    = resp.json()
         results = data.get("web", {}).get("results", [])
-        print(f"    Brave response keys: {list(data.keys())}")
         print(f"    Results returned: {len(results)}")
         return [
             {
