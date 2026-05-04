@@ -1846,5 +1846,65 @@
     "salary": null,
     "loc": "Unknown",
     "loc_cls": "loc-unknown"
+  },
+  {
+    "found_at": "2026-05-04T00:46:21.826486",
+    "ats": "Greenhouse",
+    "domain": "job-boards.greenhouse.io/patientpoint",
+    "title": "Job Application for Sr. Analyst, Strategy & Insights at PatientPoint",
+    "url": "https://job-boards.greenhouse.io/patientpoint/jobs/4686962005",
+    "snippet": "Compensation: At PatientPoint, we are committed to providing competitive pay and benefits that are in line with industry standards.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "1 week ago"
+  },
+  {
+    "found_at": "2026-05-04T00:46:21.826486",
+    "ats": "Greenhouse",
+    "domain": "boards.greenhouse.io/fundraiseup",
+    "title": "Product Analyst, Elements | Fundraise Up",
+    "url": "https://boards.greenhouse.io/fundraiseup/jobs/4689225005",
+    "snippet": "Find insights in data, conduct research, and help the product team identify growth opportunities.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "1 week ago"
+  },
+  {
+    "found_at": "2026-05-04T00:46:21.826486",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/colibrigroup",
+    "title": "Colibri Group - Senior Product Marketing Manager",
+    "url": "https://jobs.lever.co/colibrigroup/7152a1a8-f3d3-436f-a966-66b7608a7064",
+    "snippet": "Customer &amp; Market Insight Leadership: <strong>Leverage data, customer feedback, and competitive intelligence to identify growth opportunities and inform product, pricing, and messaging strategies</strong>.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "3 days ago"
+  },
+  {
+    "found_at": "2026-05-04T00:46:21.826486",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/contentsquare",
+    "title": "Contentsquare - Growth Marketing Manager",
+    "url": "https://jobs.lever.co/contentsquare/4228592a-5900-4f3e-88e2-201eed11e986",
+    "snippet": "<strong>Analyze trends, develop actionable insights to optimize against targets, and socialize relevant learnings across the organization</strong>",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "4 days ago"
+  },
+  {
+    "found_at": "2026-05-04T00:46:21.826486",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Manager, Strategic Initiatives - Accounting and Finance",
+    "url": "https://jobs.lever.co/jobgether/c8ad4668-9702-42b4-be7d-9fa12f3dcfd5",
+    "snippet": "<strong>Strong analytical and data interpretation skills, with the ability to translate insights into actionable recommendations</strong>.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "3 days ago"
   }
 ]
