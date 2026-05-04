@@ -125,7 +125,21 @@ def domain_label(url):
 #  BRAVE SEARCH
 # ─────────────────────────────────────────────────────────────
 
-def brave_search(query):
+def brave_search(query, freshness="pw"):
+    """
+    freshness options:
+      pd = past day
+      pw = past week  (default — good balance of recency vs coverage)
+      pm = past month
+      None = no filter (all time)
+    """
+    params = {
+        "q":     query,
+        "count": MAX_RESULTS,
+    }
+    if freshness:
+        params["freshness"] = freshness
+
     try:
         resp = requests.get(
             "https://api.search.brave.com/res/v1/web/search",
@@ -134,21 +148,38 @@ def brave_search(query):
                 "Accept-Encoding":      "gzip",
                 "X-Subscription-Token": BRAVE_API_KEY,
             },
-            params={
-                "q":     query,
-                "count": MAX_RESULTS,
-            },
+            params=params,
             timeout=15,
         )
         resp.raise_for_status()
         data    = resp.json()
         results = data.get("web", {}).get("results", [])
+
+        # If Brave returns mixed instead of web, retry without freshness
+        if not results and "web" not in data:
+            print(f"    No web results with freshness={freshness}, retrying without filter...")
+            params.pop("freshness", None)
+            resp    = requests.get(
+                "https://api.search.brave.com/res/v1/web/search",
+                headers={
+                    "Accept":               "application/json",
+                    "Accept-Encoding":      "gzip",
+                    "X-Subscription-Token": BRAVE_API_KEY,
+                },
+                params=params,
+                timeout=15,
+            )
+            resp.raise_for_status()
+            data    = resp.json()
+            results = data.get("web", {}).get("results", [])
+
         print(f"    Results returned: {len(results)}")
         return [
             {
                 "link":    r.get("url", ""),
                 "title":   r.get("title", ""),
                 "snippet": r.get("description", ""),
+                "age":     r.get("age", None),   # e.g. "2 days ago", "April 28, 2026"
             }
             for r in results
         ]
@@ -202,6 +233,7 @@ def run_searches(seen, dry_run=False):
             url     = item.get("link", "")
             title   = item.get("title", "").strip()
             snippet = item.get("snippet", "").replace("\n", " ").strip()
+            age     = item.get("age", None)
 
             if url in seen or url in new_urls:
                 continue
@@ -217,6 +249,7 @@ def run_searches(seen, dry_run=False):
                 "salary":   detect_salary(snippet),
                 "loc":      loc,
                 "loc_cls":  loc_cls,
+                "age":      age,
             })
             new_urls.add(url)
             found += 1
@@ -233,42 +266,42 @@ def _fake_results():
          "title": "Senior Competitive Intelligence Analyst",
          "url": "https://boards.greenhouse.io/luminary/jobs/5923401",
          "snippet": "Shape go-to-market strategy through deep competitive research. $95,000 - $120,000 per year. Fully remote.",
-         "salary": "$95,000 - $120,000", "loc": "Remote", "loc_cls": "loc-remote"},
+         "salary": "$95,000 - $120,000", "loc": "Remote", "loc_cls": "loc-remote", "age": "2 days ago"},
         {"found_at": now, "ats": "Lever", "domain": "jobs.lever.co/meridian-health",
          "title": "Market Research Manager",
          "url": "https://jobs.lever.co/meridian-health/a3f2c891",
          "snippet": "Lead qual and quant research programs. Hybrid schedule, 2 days/week in San Francisco office.",
-         "salary": None, "loc": "Hybrid", "loc_cls": "loc-hybrid"},
+         "salary": None, "loc": "Hybrid", "loc_cls": "loc-hybrid", "age": "April 28, 2026"},
         {"found_at": now, "ats": "Ashby", "domain": "jobs.ashbyhq.com/stackwise",
          "title": "Director of Strategy",
          "url": "https://jobs.ashbyhq.com/stackwise/b7d4e120",
          "snippet": "Own narrative strategy. Fully remote. Compensation: $140,000-$180,000 + equity.",
-         "salary": "$140,000 - $180,000", "loc": "Remote", "loc_cls": "loc-remote"},
+         "salary": "$140,000 - $180,000", "loc": "Remote", "loc_cls": "loc-remote", "age": "5 days ago"},
         {"found_at": now, "ats": "Workday", "domain": "forgeanalytics.myworkdayjobs.com",
          "title": "Business Insights Analyst",
          "url": "https://forgeanalytics.myworkdayjobs.com/careers/job/JR-00291",
          "snippet": "Analyze market trends. On-site role based at our Austin, TX headquarters.",
-         "salary": None, "loc": "On-site", "loc_cls": "loc-onsite"},
+         "salary": None, "loc": "On-site", "loc_cls": "loc-onsite", "age": None},
         {"found_at": now, "ats": "SmartRecruiters", "domain": "jobs.smartrecruiters.com/novabridge",
          "title": "Competitive Strategy Manager",
          "url": "https://jobs.smartrecruiters.com/novabridge/743999001234567",
          "snippet": "Build competitive battle cards and win/loss analysis. Remote-first. Pay range: $110,000 - $135,000 annually.",
-         "salary": "$110,000 - $135,000", "loc": "Remote", "loc_cls": "loc-remote"},
+         "salary": "$110,000 - $135,000", "loc": "Remote", "loc_cls": "loc-remote", "age": "1 day ago"},
         {"found_at": now, "ats": "iCIMS", "domain": "careers-crestline.icims.com/jobs",
          "title": "Narrative Strategist, Brand",
          "url": "https://careers-crestline.icims.com/jobs/1042",
          "snippet": "Develop brand voice and messaging architecture. Flexible hybrid model.",
-         "salary": None, "loc": "Hybrid", "loc_cls": "loc-hybrid"},
+         "salary": None, "loc": "Hybrid", "loc_cls": "loc-hybrid", "age": "3 days ago"},
         {"found_at": now, "ats": "BambooHR", "domain": "openloop.bamboohr.com/careers",
          "title": "Consumer Insights Analyst",
          "url": "https://openloop.bamboohr.com/careers/88",
          "snippet": "Surface the why behind consumer behavior. 100% remote. $75,000 - $90,000 + bonus.",
-         "salary": "$75,000 - $90,000", "loc": "Remote", "loc_cls": "loc-remote"},
+         "salary": "$75,000 - $90,000", "loc": "Remote", "loc_cls": "loc-remote", "age": "6 days ago"},
         {"found_at": now, "ats": "Workable", "domain": "apply.workable.com/pinnacleops",
          "title": "GTM Strategy & Operations Lead",
          "url": "https://apply.workable.com/pinnacleops/j/C2E9A774/",
          "snippet": "Drive go-to-market planning and cross-functional alignment. Location not specified.",
-         "salary": None, "loc": "Unknown", "loc_cls": "loc-unknown"},
+         "salary": None, "loc": "Unknown", "loc_cls": "loc-unknown", "age": None},
     ]
 
 # ─────────────────────────────────────────────────────────────
@@ -310,6 +343,8 @@ input[type=text] { width: 100%; padding: 8px 12px; border: 1px solid #ddd;
 .loc-unknown { background: #f0f0f0; color: #888; }
 .sal-yes { background: #d1fae5; color: #065f46; }
 .sal-no  { background: #f0f0f0; color: #aaa; }
+.age-tag     { font-size: 11px; color: #6b7280; }
+.age-unknown { font-size: 11px; color: #d1d5db; }
 .jtitle { font-size: 15px; font-weight: 500; color: #1a56db; text-decoration: none;
           display: block; margin-bottom: .35rem; line-height: 1.4; }
 .jtitle:hover { text-decoration: underline; }
@@ -363,6 +398,7 @@ def build_digest(new_jobs, dry_run=False):
             <span class="dbadge">{j['domain']}</span>
             {loc_tag(j['loc'], j['loc_cls'])}
             {sal_tag(j['salary'])}
+            {f'<span class="age-tag">&#128337; {j["age"]}</span>' if j.get("age") else '<span class="age-unknown">Date unknown</span>'}
           </div>
           <a class="jtitle" href="{j['url']}" target="_blank">{j['title']}</a>
           <p class="snippet">{j['snippet'][:240]}{'...' if len(j['snippet']) > 240 else ''}</p>
@@ -440,12 +476,14 @@ def build_all_jobs(all_jobs):
         sal = (f'<span class="badge sal-yes">{j["salary"]}</span>'
                if j["salary"] else '<span style="color:#aaa;font-size:12px">—</span>')
         txt = (j["title"] + " " + j["domain"] + " " + j["ats"]).lower().replace('"', '')
+        age_display = j.get("age") or '<span style="color:#d1d5db">—</span>'
         rows += f"""<tr data-loc="{j['loc']}" data-sal="{'yes' if j['salary'] else 'no'}" data-txt="{txt}">
           <td style="white-space:nowrap;color:#888;font-size:12px">{dt}</td>
           <td><span class="dbadge">{j['domain']}</span></td>
           <td><a class="jtitle" href="{j['url']}" target="_blank">{j['title']}</a></td>
           <td>{loc_tag(j['loc'], j['loc_cls'])}</td>
           <td>{sal}</td>
+          <td style="font-size:12px;color:#6b7280;white-space:nowrap">{age_display}</td>
         </tr>"""
 
     return f"""<!DOCTYPE html>
@@ -485,6 +523,7 @@ def build_all_jobs(all_jobs):
         <th onclick="srt(2)">Title &#8597;</th>
         <th>Location</th>
         <th>Salary</th>
+        <th onclick="srt(5)">Posted &#8597;</th>
       </tr></thead>
       <tbody id="tbody">{rows}</tbody>
     </table>
