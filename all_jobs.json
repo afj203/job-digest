@@ -1942,5 +1942,17 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": null
+  },
+  {
+    "found_at": "2026-05-04T16:22:30.308091",
+    "ats": "Jobvite",
+    "domain": "jobs.jobvite.com/cmimedia",
+    "title": "CMI Media Group is looking for Director, Digital Marketing Analytics.",
+    "url": "https://jobs.jobvite.com/cmimedia/job/oYuzzfwk",
+    "snippet": "<strong>Lead with Data-Driven Insights</strong>: Provide strategic oversight of campaign performance analysis, deliver actionable optimization recommendations, and champion data-driven decision-making across all assigned accounts.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
   }
 ]
