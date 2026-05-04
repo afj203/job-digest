@@ -142,7 +142,10 @@ def brave_search(query):
             timeout=15,
         )
         resp.raise_for_status()
-        results = resp.json().get("web", {}).get("results", [])
+        data    = resp.json()
+        results = data.get("web", {}).get("results", [])
+        print(f"    Brave response keys: {list(data.keys())}")
+        print(f"    Results returned: {len(results)}")
         return [
             {
                 "link":    r.get("url", ""),
@@ -152,17 +155,9 @@ def brave_search(query):
             for r in results
         ]
     except requests.RequestException as e:
-   results = resp.json().get("web", {}).get("results", [])
-        print(f"    Raw results from Brave: {len(results)}")
-        print(f"    Full response keys: {list(resp.json().keys())}")
-        return [
-            {
-                "link":    r.get("url", ""),
-                "title":   r.get("title", ""),
-                "snippet": r.get("description", ""),
-            }
-            for r in results
-        ]
+        print(f"  [ERROR] {e}")
+        return []
+
 # ─────────────────────────────────────────────────────────────
 #  PERSISTENCE
 # ─────────────────────────────────────────────────────────────
