@@ -1906,5 +1906,41 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": "3 days ago"
+  },
+  {
+    "found_at": "2026-05-04T08:04:55.701016",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/smiledigitalhealth",
+    "title": "Smile Digital Health - Senior Product Marketing Manager (Market Intelligence) - Remote US",
+    "url": "https://jobs.lever.co/smiledigitalhealth/67e07e7b-a08d-4c36-bb99-7ed562328031",
+    "snippet": "Produce semi-annual Market Intelligence reports that surface trends, white space, competitive signals, and emerging segment opportunities ... Own the creation and maintenance of Source of Truth (SoT) documents for key market segments, competitive landscape, and customer insight \u2014 integrated into Smile&#x27;s AI-in-the-loop marketing intelligence workflow",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "1 week ago"
+  },
+  {
+    "found_at": "2026-05-04T08:04:55.701016",
+    "ats": "Workday",
+    "domain": "capitalone.wd12.myworkdayjobs.com",
+    "title": "Senior Manager, Market Intelligence - Capital One Software (Remote)",
+    "url": "https://capitalone.wd12.myworkdayjobs.com/capital_one/job/richmond-va/senior-manager--market-intelligence---capital-one-software--remote-_r236657-1",
+    "snippet": "<strong>Senior Manager, Market Intelligence - Capital One Software</strong> (Remote) Summary: This position is a Senior Manager of Market/Competitive Intelligence on the Strategy team of Capital One Software, the enterprise B2B software division of Capital One.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "February 27, 2026"
+  },
+  {
+    "found_at": "2026-05-04T08:04:55.701016",
+    "ats": "SmartRecruiters",
+    "domain": "jobs.smartrecruiters.com/Traveloka",
+    "title": "Traveloka is looking for a Market Research & Consumer Insight Associate Manager in Bangkok, Thailand",
+    "url": "https://jobs.smartrecruiters.com/Traveloka/743999700070091-market-research-consumer-insight-associate-manager",
+    "snippet": "Responsible for managing and enhancing the Consumer Insights and Market Research delivery for Thailand\u2019s marketing teamDeliver and enhance research quality.Manage the complete process of planning and executing custom research studies (qualitative and quantitative) related to Transport products in Th...",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
   }
 ]
