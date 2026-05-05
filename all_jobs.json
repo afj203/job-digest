@@ -1966,5 +1966,65 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": null
+  },
+  {
+    "found_at": "2026-05-05T06:29:12.196696",
+    "ats": "Greenhouse",
+    "domain": "boards.greenhouse.io/cbinsights",
+    "title": "Job Application for Senior Analyst Emerging Technologies at CB Insights",
+    "url": "https://boards.greenhouse.io/cbinsights/jobs/3497251",
+    "snippet": "As a <strong>CB Insights analyst, you will produce digestible and actionable insights into technologies, business models, competitors, and market trends of tomorrow</strong>. By analyzing data and writing reports on the results, you will help predict which emerging ...",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
+  },
+  {
+    "found_at": "2026-05-05T06:29:12.196696",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/padsplit",
+    "title": "PadSplit - Performance Marketing Manager",
+    "url": "https://jobs.lever.co/padsplit/fde786ce-53ed-4626-9c3a-7f45d6d1093a",
+    "snippet": "We\u2019re looking for a strategic, highly analytical performance marketer who thrives in a results-driven environment and takes full ownership of outcomes. You\u2019re someone who not only executes campaigns but also understands how to optimize the broader growth engine. You enjoy digging into data, identifying trends, and translating insights into scalable strategies.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "1 day ago"
+  },
+  {
+    "found_at": "2026-05-05T06:29:12.196696",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Senior Marketing Creative Director (Remote)",
+    "url": "https://jobs.lever.co/jobgether/458a3dbd-fa7f-4cec-b4b6-ae527fdf4381",
+    "snippet": "<strong>Lead and develop monthly creative strategies from data insights, identifying hooks, angles, and campaigns for organic and paid content</strong>.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "2 days ago"
+  },
+  {
+    "found_at": "2026-05-05T06:29:12.196696",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Product Analyst - Integrations",
+    "url": "https://jobs.lever.co/jobgether/003f7777-bd86-444f-a8eb-59f5ab2ec997",
+    "snippet": "Strong analytical skills with the ability to interpret complex data and generate actionable insights",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "2 days ago"
+  },
+  {
+    "found_at": "2026-05-05T06:29:12.196696",
+    "ats": "Workday",
+    "domain": "stryker.wd1.myworkdayjobs.com",
+    "title": "Associate Strategy and Market Insights Manager (Remote)",
+    "url": "https://stryker.wd1.myworkdayjobs.com/en-US/StrykerCareers/job/New-Hampshire-Virtual-Address/Associate-Strategy-and-Market-Insights-Manager--Remote-_R537341/apply/applyManually",
+    "snippet": "Work Flexibility: Remote or Hybrid or Onsite What You Will Do As the <strong>Associate Strategy &amp; Insights Manager</strong>, plays a key role in global market insights and strategy management for the Medical \u2013 Acute Care business by analyzing industry trends, ...",
+    "salary": null,
+    "loc": "Hybrid",
+    "loc_cls": "loc-hybrid",
+    "age": null
   }
 ]
