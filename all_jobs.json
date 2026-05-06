@@ -2062,5 +2062,17 @@
     "loc": "Remote",
     "loc_cls": "loc-remote",
     "age": null
+  },
+  {
+    "found_at": "2026-05-06T20:54:34.615345",
+    "ats": "Greenhouse",
+    "domain": "boards.greenhouse.io/fanduel",
+    "title": "Open Positions - FanDuel Careers",
+    "url": "https://boards.greenhouse.io/fanduel/jobs/7664845",
+    "snippet": "THE POSITIONOur roster has an opening with your name on it We are looking for an Analyst to join our team. You will derive insights for group-wide and commercial teams in order to drive actionable insights about the business. You will work alongside a group of other analysts through various ...",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "March 4, 2026"
   }
 ]
