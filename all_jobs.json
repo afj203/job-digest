@@ -2026,5 +2026,41 @@
     "loc": "Hybrid",
     "loc_cls": "loc-hybrid",
     "age": null
+  },
+  {
+    "found_at": "2026-05-06T16:16:16.142346",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/rover",
+    "title": "Rover.com - Director of Analytics",
+    "url": "https://jobs.lever.co/rover/0e175286-84b7-4221-86dd-78e24db15943",
+    "snippet": "Lead and develop Rover&#x27;s Product Analytics team, including analysts and analytics managers, with a focus on judgment, technical depth, and business impact",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "1 day ago"
+  },
+  {
+    "found_at": "2026-05-06T16:16:16.142346",
+    "ats": "Ashby",
+    "domain": "jobs.ashbyhq.com/qawolf",
+    "title": "Marketing Insights Analyst @ QA Wolf",
+    "url": "https://jobs.ashbyhq.com/qawolf/a897d919-28c1-48f6-bacc-0b9148738af1",
+    "snippet": "You need to enable JavaScript to run this app",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "April 1, 2026"
+  },
+  {
+    "found_at": "2026-05-06T16:16:16.142346",
+    "ats": "Jobvite",
+    "domain": "jobs.jobvite.com/exprealty",
+    "title": "eXp World Holdings Careers - Public Relations & Content Marketing Specialist - Zoocasa - Ontario - (REMOTE)",
+    "url": "https://jobs.jobvite.com/exprealty/job/ogohqfw5",
+    "snippet": "Reporting to the Senior Manager of Public Relations &amp; Content Marketing, you&#x27;ll be responsible for researching and creating content for the Zoocasa Market Insights blog and working with our media partners to grow our brand presence online.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": null
   }
 ]
