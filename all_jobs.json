@@ -2074,5 +2074,53 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": "March 4, 2026"
+  },
+  {
+    "found_at": "2026-05-07T08:01:29.183569",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/bluelightconsulting",
+    "title": "Bluelight Consulting - Product Analyst - Remote, Latin America",
+    "url": "https://jobs.lever.co/bluelightconsulting/ab8bea8a-0a18-4f5f-94d9-66b8369dc41a",
+    "snippet": "Experience with Power BI (or similar BI tools) to analyze product metrics, build reports, and translate data into product insights",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "2 days ago"
+  },
+  {
+    "found_at": "2026-05-07T08:01:29.183569",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/zuru",
+    "title": "ZURU - Business Analyst",
+    "url": "https://jobs.lever.co/zuru/60db5a83-9300-4900-8e7e-a633f8c984a0",
+    "snippet": "Support the broader Sales team with ad-hoc analysis, competitive benchmarking, and market intelligence. ... 1\u20133 years of experience in a Sales Analyst, Category Analyst, Commercial Analyst, or Account Executive support role ideally within FMCG, beauty, personal care, or consumer healthcare. Proficiency in Microsoft Excel (advanced: PivotTables, XLOOKUP, modelling) and PowerPoint the ability to build clean, insight-led slides under pressure is a must.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "1 week ago"
+  },
+  {
+    "found_at": "2026-05-07T08:01:29.183569",
+    "ats": "Ashby",
+    "domain": "jobs.ashbyhq.com/latamcent",
+    "title": "Senior Ecommerce Growth Strategist @ LatamCent",
+    "url": "https://jobs.ashbyhq.com/latamcent/37d410ea-062b-43cb-bdc7-22b5275f2010",
+    "snippet": "About the Role: As a Senior Ecommerce Growth Strategist, you\u2019ll get to be a jack-of-all-trades. You\u2019ll be a media planner, establishing a channel mix to support your Shopify clients\u2019 goals. You\u2019ll be an analyst, digging through data to pull out meaningful insights.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
+  },
+  {
+    "found_at": "2026-05-07T08:01:29.183569",
+    "ats": "Jobvite",
+    "domain": "jobs.jobvite.com/cmimedia",
+    "title": "CMI Media Group is looking for Associate Analyst, SEM & Emerging Media.",
+    "url": "https://jobs.jobvite.com/cmimedia/job/oMrHgfwU",
+    "snippet": "They will be <strong>working alongside media, analytics, and other account teams to ensure campaigns are fully integrated</strong>. The person in this role will also assist senior search team members perform keyword research, competitive analysis and planning ...",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
   }
 ]
