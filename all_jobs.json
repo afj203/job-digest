@@ -2254,5 +2254,89 @@
     "loc": "Remote",
     "loc_cls": "loc-remote",
     "age": null
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Sr. Market Intelligence Specialist (Remote)",
+    "url": "https://jobs.lever.co/jobgether/7e236dd4-5bd4-48d9-bae9-c6c55f7715df",
+    "snippet": "We are currently looking for a Market Intelligence Lead - REMOTE. In this role, you will <strong>spearhead research initiatives that shape the overall product strategy and market positioning</strong>.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "4 days ago"
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/caseware",
+    "title": "Caseware - Product Analyst, Data Platform and Analytics",
+    "url": "https://jobs.lever.co/caseware/c5cf6980-4acd-43f6-b382-83ef09df4462",
+    "snippet": "<strong>Strong data storytelling skills</strong> \u2014 you can translate a complex analysis into a tight narrative for a non-technical audience without losing the signal.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "3 days ago"
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "Ashby",
+    "domain": "jobs.ashbyhq.com/second-nature",
+    "title": "Business Intelligence Analyst @ Second Nature",
+    "url": "https://jobs.ashbyhq.com/second-nature/f8c438dd-468a-4472-91f6-c8c9ca3ef768/application",
+    "snippet": "We\u2019re looking for a Business Intelligence Analyst to help turn growing volumes of product, revenue, and operational data into clear, trusted insights for the business. This role will partner closely with the VP of Business Intelligence and work across Revenue, Marketing, Finance, Product, ...",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "December 17, 2025"
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "iCIMS",
+    "domain": "www.icims.com/blog",
+    "title": "Hiring & Recruiting Blog | iCIMS Hiring Insights",
+    "url": "https://www.icims.com/blog/",
+    "snippet": "View press releases, media coverage, the latest hiring data and see what analysts are saying about ICIMS.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "September 23, 2020"
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "iCIMS",
+    "domain": "www.icims.com/blog",
+    "title": "Talent Pool Management: How to Manage Your Candidates | iCIMS",
+    "url": "https://www.icims.com/blog/how-to-manage-your-talent-pool-for-high-growth-hiring/",
+    "snippet": "Uncover unique market insights, explore best practices and gain access to talent experts across our library of content. ... The ultimate guide to building a high-converting recruitment funnel. ... View press releases, media coverage, the latest hiring data and see what analysts are saying about iCIMS.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "November 18, 2025"
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "iCIMS",
+    "domain": "www.icims.com/products",
+    "title": "iCIMS for IT leaders | iCIMS",
+    "url": "https://www.icims.com/products/role/information-technology/",
+    "snippet": "Uncover unique market insights, explore best practices and gain access to talent experts across our library of content. ... The ultimate guide to building a high-converting recruitment funnel. ... View press releases, media coverage, the latest hiring data and see what analysts are saying about iCIMS.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "July 11, 2025"
+  },
+  {
+    "found_at": "2026-05-08T05:47:42.102545",
+    "ats": "Jobvite",
+    "domain": "jobs.jobvite.com/cmimedia",
+    "title": "CMI Media Group is looking for Director, Client Finance.",
+    "url": "https://jobs.jobvite.com/cmimedia/job/oPXMzfwR",
+    "snippet": "Realizing Healthcare&#x27;s Possibilities. CMI Media Group, a WPP company, is a full-service media agency focused solely on health, wellness, and pharmaceutical marketing. CMI Media Group\u2019s core offerings include Audience Strategy, Planning, Development, and Insights; Data and Analytics; Buying and Investment; and Direct Response and Customer Experience.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
   }
 ]
