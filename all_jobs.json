@@ -2362,5 +2362,17 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": "March 2, 2026"
+  },
+  {
+    "found_at": "2026-05-08T20:14:28.971116",
+    "ats": "SmartRecruiters",
+    "domain": "jobs.smartrecruiters.com/Nagarro1",
+    "title": "Nagarro is looking for a Associate Director - Business Development Manager (IT Services) in Remote, Remote, United States",
+    "url": "https://jobs.smartrecruiters.com/Nagarro1/744000090209721-associate-director-associate-director-of-sales-growth-",
+    "snippet": "Portfolio Development: Collaborate with business units to launch at least one new digital service offering (e.g., digital customer experience or marketing technology) that aligns with industry trends, meets client demand, and strengthens our competitive position.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": null
   }
 ]
