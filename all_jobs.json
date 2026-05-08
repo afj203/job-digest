@@ -2338,5 +2338,29 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": null
+  },
+  {
+    "found_at": "2026-05-08T15:11:05.275359",
+    "ats": "Workday",
+    "domain": "gartner.wd5.myworkdayjobs.com",
+    "title": "Senior Director, Analyst \u2013 AI Marketing Strategy (Remote UK)",
+    "url": "https://gartner.wd5.myworkdayjobs.com/en-US/EXT/job/Senior-Director--Analyst---AI-Marketing-Strategy--Remote-UK-_107566",
+    "snippet": "Senior Director Analyst, AI Marketing Strategy About the role: Gartner Analysts are industry thought leaders who create must-have research, market predictions and best practices for a broad range of world-leading organizations. A Senior Director serves as a leader within Gartner\u2019s Business and Technology Insights sector, establishing oneself as a credible voice within their designated market at local, regional, and global levels.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "January 30, 2026"
+  },
+  {
+    "found_at": "2026-05-08T15:11:05.275359",
+    "ats": "iCIMS",
+    "domain": "www.icims.com/products",
+    "title": "Candidate Experience Management Software | ICIMS",
+    "url": "https://www.icims.com/products/candidate-engagement-platform/candidate-relationship-management-system/",
+    "snippet": "Uncover unique market insights, explore best practices and gain access to talent experts across our library of content. ... The ultimate guide to building a high-converting recruitment funnel. ... View press releases, media coverage, the latest hiring data and see what analysts are saying about ICIMS.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "March 2, 2026"
   }
 ]
