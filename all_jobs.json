@@ -2374,5 +2374,77 @@
     "loc": "Remote",
     "loc_cls": "loc-remote",
     "age": null
+  },
+  {
+    "found_at": "2026-05-09T06:27:30.253621",
+    "ats": "Greenhouse",
+    "domain": "boards.greenhouse.io/coupang",
+    "title": "Manager II, Data Analysis & Staff Data Analyst, Taipei, Taiwan | Coupang Careers",
+    "url": "https://boards.greenhouse.io/coupang/jobs/7882918",
+    "snippet": "As a product analyst, you will be <strong>responsible for providing reports and insights that aid in management to ensure top-notch customer experience</strong>.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "4 days ago"
+  },
+  {
+    "found_at": "2026-05-09T06:27:30.253621",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Sr. Product Marketing Director (Remote)",
+    "url": "https://jobs.lever.co/jobgether/1cfbfae5-7051-485e-a2f1-b3ac1a9077b0",
+    "snippet": "<strong>Evolve and construct a unified storage platform narrative that resonates with hybrid cloud and AI readiness</strong>. Define competitive positioning to ensure differentiation is communicated across all marketing content.",
+    "salary": null,
+    "loc": "Hybrid",
+    "loc_cls": "loc-hybrid",
+    "age": "1 day ago"
+  },
+  {
+    "found_at": "2026-05-09T06:27:30.253621",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Senior Product analyst",
+    "url": "https://jobs.lever.co/jobgether/4479d911-dc8a-40d1-b33d-5770ba8e85f2",
+    "snippet": "<strong>Collaborate with product, engineering, and marketing teams to translate data insights into strategic product decisions</strong>.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "2 days ago"
+  },
+  {
+    "found_at": "2026-05-09T06:27:30.253621",
+    "ats": "Workday",
+    "domain": "gartner.wd5.myworkdayjobs.com",
+    "title": "Sr Director Analyst - AI's Impact on HR and the Workforce (Remote - U.S.)",
+    "url": "https://gartner.wd5.myworkdayjobs.com/en-US/EXT/job/Sr-Director-Analyst---AI-s-Impact-on-HR-and-the-Workforce--Remote---US-_105791",
+    "snippet": "About the role: Gartner Analysts are industry thought leaders who create must-have insights, market predictions and best practices for a broad range of world-leading organizations. A Senior Director serves as a leader within Gartner\u2019s Business and Technology Insights (BTI) group, establishing ...",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": "January 21, 2026"
+  },
+  {
+    "found_at": "2026-05-09T06:27:30.253621",
+    "ats": "Workday",
+    "domain": "stryker.wd1.myworkdayjobs.com",
+    "title": "Analyst, Market Insights (hybrid) - Myworkdayjobs.com",
+    "url": "https://stryker.wd1.myworkdayjobs.com/StrykerCareers/job/Bloomington-Minnesota/Analyst--Market-Insights--hybrid-_R560380",
+    "snippet": "In this role, you will support the Market Insights function by <strong>gathering, analyzing, and synthesizing data to uncover trends, inform strategic decisions, and enhance our understanding of the</strong> ...",
+    "salary": null,
+    "loc": "Hybrid",
+    "loc_cls": "loc-hybrid",
+    "age": "February 23, 2026"
+  },
+  {
+    "found_at": "2026-05-09T06:27:30.253621",
+    "ats": "Workday",
+    "domain": "gartner.wd5.myworkdayjobs.com",
+    "title": "Sr. Director Analyst, Data &amp; Analytics and Communications Technology (Remote-US)",
+    "url": "https://gartner.wd5.myworkdayjobs.com/ext/job/remote---texas/sr-director-analyst--data---analytics-and-communications-technology--remote-us-_106619",
+    "snippet": "Sr. Director Analyst, Data &amp; Analytics and Communications Technology About This Role: Gartner Analysts are industry thought leaders who create must-have research, market predictions, and best practices for a broad range of world-leading organizations. A Senior Director serves as a leader within Gartner Business and Technology Insights.",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": null
   }
 ]
