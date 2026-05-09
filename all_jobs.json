@@ -2470,5 +2470,17 @@
     "loc": "Remote",
     "loc_cls": "loc-remote",
     "age": null
+  },
+  {
+    "found_at": "2026-05-09T19:45:44.043417",
+    "ats": "Workday",
+    "domain": "immatics.wd3.myworkdayjobs.com",
+    "title": "Director, Market Research and Competitive Intelligence",
+    "url": "https://immatics.wd3.myworkdayjobs.com/immatics_us/job/remote-work-usa/director--market-research-and-competitive-intelligence_jr100582",
+    "snippet": "Join Immatics and shape the future of cancer immunotherapy; one patient at a time! Immatics is committed to making a meaningful impact on the lives of patients with cancer. We are the global leader in precision targeting of PRAME, a target expressed in more than 50 cancers.",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "January 20, 2026"
   }
 ]
