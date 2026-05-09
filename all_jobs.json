@@ -2446,5 +2446,29 @@
     "loc": "Remote",
     "loc_cls": "loc-remote",
     "age": null
+  },
+  {
+    "found_at": "2026-05-09T14:19:54.046370",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/matchgroup",
+    "title": "Match Group - Senior Manager, Partnerships and Operations",
+    "url": "https://jobs.lever.co/matchgroup/ce941a61-c742-4add-b982-022afef0fbb6",
+    "snippet": "Surface insights and learnings from local market activity including partner performance, attendee feedback, and operational data to help shape and evolve the broader Events program strategy",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "2 days ago"
+  },
+  {
+    "found_at": "2026-05-09T14:19:54.046370",
+    "ats": "Workday",
+    "domain": "gartner.wd5.myworkdayjobs.com",
+    "title": "VP Analyst, AI Infrastructure for Head's of I&amp;O (Remote US)",
+    "url": "https://gartner.wd5.myworkdayjobs.com/en-US/EXT/job/Senior-Director-Analyst--Infrastructure-Strategy-for-Heads-of-I-O--Remote-Western-US-_103922",
+    "snippet": "About the role: Gartner Analysts are industry thought leaders who create must-have insights, market predictions and best practices for a broad range of world-leading organizations. A VP serves as a leader within Gartner\u2019s Business and Technology Insights (BTI) group, establishing oneself ...",
+    "salary": null,
+    "loc": "Remote",
+    "loc_cls": "loc-remote",
+    "age": null
   }
 ]
