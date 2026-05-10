@@ -1,10 +1,10 @@
 name: Daily Job Digest
 
 on:
-  schedule:
-    - cron: "0 10 * * *"   # 6:00 AM ET
-    - cron: "0 16 * * *"   # 12:00 PM ET
-    - cron: "0 22 * * *"   # 6:00 PM ET
+  #schedule:
+  #  - cron: "0 10 * * *"   # 6:00 AM ET
+ #   - cron: "0 16 * * *"   # 12:00 PM ET
+ #   - cron: "0 22 * * *"   # 6:00 PM ET
   workflow_dispatch:
 
 jobs:
