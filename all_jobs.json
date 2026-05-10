@@ -2482,5 +2482,29 @@
     "loc": "Unknown",
     "loc_cls": "loc-unknown",
     "age": "January 20, 2026"
+  },
+  {
+    "found_at": "2026-05-10T07:17:15.325373",
+    "ats": "Lever",
+    "domain": "jobs.lever.co/jobgether",
+    "title": "Jobgether - Creative Director",
+    "url": "https://jobs.lever.co/jobgether/603e7034-88a7-4c61-b913-2a5094518b58",
+    "snippet": "Proven ability to lead end-to-end concept development from insight through execution",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": "2 days ago"
+  },
+  {
+    "found_at": "2026-05-10T07:17:15.325373",
+    "ats": "SmartRecruiters",
+    "domain": "jobs.smartrecruiters.com/LinkedIn3",
+    "title": "LinkedIn is looking for a Sales Strategy & Operations Associate in San Francisco, CA",
+    "url": "https://jobs.smartrecruiters.com/LinkedIn3/743999761816954-sales-strategy-operations-associate",
+    "snippet": "<strong>Track business performance and provide insights and recommendations to advise sales leadership on forecasting and day to day decisions</strong>",
+    "salary": null,
+    "loc": "Unknown",
+    "loc_cls": "loc-unknown",
+    "age": null
   }
 ]
